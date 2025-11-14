@@ -1,0 +1,311 @@
+/* VS Code 主题样式 */
+
+/* 默认主题变量 - 深色主题 */
+:root {
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #252526;
+    --titlebar-bg: #2d2d30;
+    --sidebar-bg: #252526;
+    --editor-bg: #1e1e1e;
+    --panel-bg: #252526;
+    --tab-active-bg: #1e1e1e;
+    --tab-inactive-bg: #2d2d30;
+    --tab-hover-bg: #3e3e42;
+    
+    --text-primary: #cccccc;
+    --text-secondary: #969696;
+    --text-muted: #6a6a6a;
+    
+    --border-color: #3e3e42;
+    --hover-bg: #2a2d2e;
+    --selection-bg: #264f78;
+    --input-bg: #3c3c3c;
+    
+    --accent-color: #007acc;
+    --success-color: #4ec9b0;
+    --warning-color: #ffcc02;
+    --error-color: #f44747;
+    
+    --font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+/* 浏览器兼容性支持 - 为不支持CSS变量的浏览器提供备用值 */
+@supports not (--css: variables) {
+    body {
+        background: #1e1e1e !important;
+        color: #ffffff !important;
+    }
+    
+    #app {
+        background: #1e1e1e !important;
+        color: #ffffff !important;
+    }
+    
+    .search-container {
+        background: #2d2d30 !important;
+    }
+    
+    #search-input {
+        background: #3c3c3c !important;
+        color: #ffffff !important;
+        border: 1px solid #424242 !important;
+    }
+    
+    .settings-container {
+        background: #2d2d30 !important;
+        color: #ffffff !important;
+        border: 1px solid #424242 !important;
+    }
+    
+    .setting-item {
+        color: #ffffff !important;
+    }
+    
+    .setting-item label {
+        color: #ffffff !important;
+    }
+    
+    .setting-item input, .setting-item select {
+        background: #3c3c3c !important;
+        color: #ffffff !important;
+        border: 1px solid #424242 !important;
+    }
+}
+
+/* 浅色主题 */
+[data-theme="light"],
+:root[data-theme="light"] {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f3f3f3;
+    --titlebar-bg: #dddddd;
+    --sidebar-bg: #f3f3f3;
+    --editor-bg: #ffffff;
+    --panel-bg: #f3f3f3;
+    --tab-active-bg: #ffffff;
+    --tab-inactive-bg: #e4e4e4;
+    --tab-hover-bg: #e1e1e1;
+    
+    --text-primary: #000000;
+    --text-secondary: #333333;
+    --text-muted: #666666;
+    
+    --border-color: #e1e1e1;
+    --hover-bg: #e8e8e8;
+    --selection-bg: #add6ff;
+    --input-bg: #ffffff;
+    
+    --accent-color: #007acc;
+    --success-color: #008000;
+    --warning-color: #ff8c00;
+    --error-color: #ff0000;
+}
+
+/* 深色主题 */
+[data-theme="dark"],
+:root[data-theme="dark"] {
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #252526;
+    --titlebar-bg: #2d2d30;
+    --sidebar-bg: #252526;
+    --editor-bg: #1e1e1e;
+    --panel-bg: #252526;
+    --tab-active-bg: #1e1e1e;
+    --tab-inactive-bg: #2d2d30;
+    --tab-hover-bg: #3e3e42;
+    
+    --text-primary: #ffffff;
+    --text-secondary: #ffffff;
+    --text-muted: #cccccc;
+    
+    --border-color: #3e3e42;
+    --hover-bg: #2a2d2e;
+    --selection-bg: #264f78;
+    --input-bg: #3c3c3c;
+    
+    --accent-color: #007acc;
+    --success-color: #4ec9b0;
+    --warning-color: #ffcc02;
+    --error-color: #f44747;
+}
+
+/* 高对比度主题 */
+[data-theme="high-contrast"],
+:root[data-theme="high-contrast"] {
+    --bg-primary: #000000;
+    --bg-secondary: #0d0d0d;
+    --titlebar-bg: #1a1a1a;
+    --sidebar-bg: #0d0d0d;
+    --editor-bg: #000000;
+    --panel-bg: #0d0d0d;
+    --tab-active-bg: #000000;
+    --tab-inactive-bg: #1a1a1a;
+    --tab-hover-bg: #2a2a2a;
+    
+    --text-primary: #ffffff;
+    --text-secondary: #ffffff;
+    --text-muted: #cccccc;
+    
+    --border-color: #ffffff;
+    --hover-bg: #2a2a2a;
+    --selection-bg: #ffffff;
+    --input-bg: #1a1a1a;
+    
+    --accent-color: #ffffff;
+    --success-color: #00ff00;
+    --warning-color: #ffff00;
+    --error-color: #ff0000;
+}
+
+/* Monaco Editor 主题覆盖 */
+.vs-dark .monaco-editor {
+    background: var(--editor-bg) !important;
+}
+
+.vs-dark .monaco-editor .margin {
+    background: var(--editor-bg) !important;
+}
+
+/* 语法高亮颜色 - 深色主题 */
+.vs-dark .token.keyword {
+    color: #569cd6 !important;
+}
+
+.vs-dark .token.string {
+    color: #ce9178 !important;
+}
+
+.vs-dark .token.comment {
+    color: #6a9955 !important;
+}
+
+.vs-dark .token.function {
+    color: #dcdcaa !important;
+}
+
+.vs-dark .token.number {
+    color: #b5cea8 !important;
+}
+
+.vs-dark .token.operator {
+    color: #d4d4d4 !important;
+}
+
+/* 语法高亮颜色 - 浅色主题 */
+.vs .token.keyword {
+    color: #0000ff !important;
+}
+
+.vs .token.string {
+    color: #a31515 !important;
+}
+
+.vs .token.comment {
+    color: #008000 !important;
+}
+
+.vs .token.function {
+    color: #795e26 !important;
+}
+
+.vs .token.number {
+    color: #098658 !important;
+}
+
+.vs .token.operator {
+    color: #000000 !important;
+}
+
+/* 文件图标颜色 */
+.file-icon.js { color: #f7df1e; }
+.file-icon.html { color: #e34c26; }
+.file-icon.css { color: #1572b6; }
+.file-icon.json { color: #000000; }
+.file-icon.md { color: #000000; }
+.file-icon.py { color: #3776ab; }
+.file-icon.java { color: #007396; }
+.file-icon.cpp { color: #00599c; }
+.file-icon.folder { color: #d4d4d4; }
+
+/* 状态栏样式 */
+.status-bar {
+    display: flex;
+    align-items: center;
+    height: 22px;
+    background: var(--statusbar-bg);
+    border-top: 1px solid var(--border-color);
+    padding: 0 10px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.status-item {
+    margin-right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-item:hover {
+    color: var(--text-primary);
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* 动画效果 */
+.tab {
+    transition: background-color 0.2s ease;
+}
+
+.file-item {
+    transition: background-color 0.15s ease;
+}
+
+.panel-tab {
+    transition: all 0.2s ease;
+}
+
+/* 加载动画 */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--border-color);
+    border-radius: 50%;
+    border-top-color: var(--accent-color);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    :root {
+        --sidebar-width: 250px;
+    }
+}
+
+/* 自定义属性 */
+:root {
+    --statusbar-bg: var(--titlebar-bg);
+    --line-height: 1.4;
+    --font-size: 14px;
+}

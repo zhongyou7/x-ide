@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X IDE</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/vscode-theme.css">
+    <link rel="stylesheet" href="styles/panels.css">
+    <link rel="stylesheet" href="styles/file-tree.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 顶部菜单栏 -->
+        <div class="titlebar">
+            <div class="titlebar-left">
+                <span class="app-title">X IDE</span>
+            </div>
+            <div class="titlebar-center">
+                <div class="tabs-container" id="tabs-container"></div>
+            </div>
+            <div class="titlebar-right">
+                <button class="titlebar-btn" id="api-mode-toggle" title="切换API模式（浏览器/服务器）">🌐</button>
+                <button class="titlebar-btn" id="theme-toggle" title="切换主题">🌙</button>
+                <button class="titlebar-btn" id="run-btn" title="运行">▶️</button>
+                <button class="titlebar-btn" id="help-btn" title="帮助">❓</button>
+            </div>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="main-content">
+            <!-- 左侧边栏 -->
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-tabs">
+                        <div class="sidebar-tab active" data-panel="explorer">📁</div>
+                        <div class="sidebar-tab" data-panel="search">🔍</div>
+                        <div class="sidebar-tab" data-panel="settings">⚙️</div>
+                    </div>
+                </div>
+                <div class="sidebar-content">
+                    <!-- 文件资源管理器 -->
+                    <div class="panel active" id="explorer-panel">
+                        <div class="panel-header">
+                            <span>资源管理器</span>
+                            <div class="panel-header-buttons">
+                                <button class="panel-btn" id="new-file-btn" title="新建文件">📄</button>
+                                <button class="panel-btn" id="new-folder-btn" title="新建文件夹">📁</button>
+                                <button class="panel-btn" id="rename-btn" title="重命名">✏️</button>
+                                <button class="panel-btn" id="delete-btn" title="删除">🗑️</button>
+                                <button class="panel-btn" id="move-btn" title="移动">📤</button>
+                                <button class="panel-btn" id="open-folder-btn" title="打开文件夹">📂</button>
+                            </div>
+                        </div>
+                        <div class="file-search-container">
+                            <input type="text" id="file-search" placeholder="搜索文件...">
+                        </div>
+                        <div class="file-tree" id="file-tree"></div>
+                    </div>
+
+                    <!-- 搜索面板 -->
+                    <div class="panel" id="search-panel">
+                        <div class="panel-header">
+                            <span>搜索</span>
+                        </div>
+                        <div class="settings-container browser-chrome">
+                            <input type="text" id="search-input" placeholder="搜索文件内容...">
+                            <div id="search-stats"></div>
+                            <div id="search-results-content"></div>
+                        </div>
+                    </div>
+
+                    <!-- 设置面板 -->
+                    <div class="panel" id="settings-panel">
+                        <div class="panel-header">
+                            <span>设置</span>
+                        </div>
+                        <div class="settings-container">
+                            <!-- 编辑器外观设置 -->
+                            <div class="setting-group">
+                                <h3>编辑器外观</h3>
+                                <div class="setting-item">
+                                    <label>字体大小:</label>
+                                    <select id="font-size" style="width: 80px;color: #ffffff;">
+                                        <option value="8">8px</option>
+                                        <option value="10">10px</option>
+                                        <option value="12">12px</option>
+                                        <option value="14" selected>14px</option>
+                                        <option value="16">16px</option>
+                                        <option value="18">18px</option>
+                                        <option value="20">20px</option>
+                                        <option value="22">22px</option>
+                                        <option value="24">24px</option>
+                                        <option value="26">26px</option>
+                                        <option value="28">28px</option>
+                                        <option value="30">30px</option>
+                                        <option value="32">32px</option>
+                                    </select>
+                                </div>
+                                <div class="setting-item">
+                                    <label>字体:</label>
+                                    <select id="font-family" style="width: 150px;color: #ffffff;">
+                                        <option value="Consolas">Consolas</option>
+                                        <option value="'Courier New', monospace">Courier New</option>
+                                        <option value="'Source Code Pro', monospace">Source Code Pro</option>
+                                        <option value="'Fira Code', monospace">Fira Code</option>
+                                        <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+                                    </select>
+                                </div>
+                                <div class="setting-item">
+                                    <label>Tab 大小:</label>
+                                    <input type="number" id="tab-size" min="2" max="8" value="4" style="width: 80px;color: #ffffff;">
+                                </div>
+                                <div class="setting-item">
+                                    <label>自动换行:</label>
+                                    <input type="checkbox" id="word-wrap" checked style="accent-color: #ffffff;">
+                                </div>
+                                <div class="setting-item">
+                                    <label>显示小地图:</label>
+                                    <input type="checkbox" id="minimap" checked style="accent-color: #ffffff;">
+                                </div>
+                                <div class="setting-item">
+                                    <label>显示行号:</label>
+                                    <input type="checkbox" id="line-numbers" checked style="accent-color: #ffffff;">
+                                </div>
+                            </div>
+                            
+                            <!-- 编辑器行为设置 -->
+                            <div class="setting-group">
+                                <h3>编辑器行为</h3>
+                                <div class="setting-item">
+                                    <label>自动保存:</label>
+                                    <input type="checkbox" id="auto-save" checked style="accent-color: #ffffff;">
+                                </div>
+                                <div class="setting-item">
+                                    <label>保存时格式化:</label>
+                                    <input type="checkbox" id="format-on-save" checked style="accent-color: #ffffff;">
+                                </div>
+                                <div class="setting-item">
+                                    <label>删除行尾空格:</label>
+                                    <input type="checkbox" id="trim-trailing-whitespace" checked style="accent-color: #ffffff;">
+                                </div>
+                                <div class="setting-item">
+                                    <label>自动检测缩进:</label>
+                                    <input type="checkbox" id="detect-indentation" checked style="accent-color: #ffffff;">
+                                </div>
+                            </div>
+                            
+                            <!-- 主题设置 -->
+                            <div class="setting-group">
+                                <h3>主题</h3>
+                                <div class="setting-item">
+                                    <label>主题:</label>
+                                    <select id="theme-select" style="width: 150px;color: #ffffff;">
+                                        <option value="vs-dark">深色</option>
+                                        <option value="vs">浅色</option>
+                                        <option value="hc-black">高对比度</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 可拖动分隔条 -->
+            <div class="resizer" id="sidebar-resizer"></div>
+
+            <!-- 编辑器和底部面板容器 -->
+            <div class="editor-bottom-container">
+                <!-- 编辑器区域 -->
+                <div class="editor-container" id="editor-container">
+                    <div class="editor-tabs" id="editor-tabs"></div>
+                    <div class="editor-content">
+                        <div id="monaco-editor" style="height: 100%;"></div>
+                    </div>
+                </div>
+
+                <!-- 底部面板分隔条 -->
+                <div class="resizer resizer-bottom" id="bottom-resizer"></div>
+
+                <!-- 底部面板 -->
+                <div class="bottom-panel" id="bottom-panel">
+                    <div class="panel-tabs">
+                        <div class="panel-tab active" data-panel="output">输出</div>
+                        <div class="panel-tab" data-panel="terminal">终端</div>
+                        <div class="panel-tab" data-panel="problems">问题</div>
+                    </div>
+                    <div class="panel-content">
+                        <!-- 输出面板 -->
+                        <div class="panel-pane active" id="output-panel">
+                            <div id="output-content"></div>
+                        </div>
+
+                        <!-- 终端面板 -->
+                        <div class="panel-pane" id="terminal-panel">
+                            <div id="terminal-content">
+                                <div class="terminal-welcome">
+                                    X IDE 终端<br>
+                                    使用本地环境运行代码...<br>
+                                    <br>
+                                </div>
+                                <div id="terminal-output"></div>
+                            </div>
+                        </div>
+
+                        <!-- 问题面板 -->
+                        <div class="panel-pane" id="problems-panel">
+                            <div id="problems-content">暂无问题</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片预览弹窗 -->
+    <div id="image-preview-modal" class="image-preview-modal">
+        <div class="image-preview-modal-content">
+            <div class="image-preview-modal-header">
+                <div class="image-preview-modal-title" id="image-preview-modal-title">图片预览</div>
+                <button class="image-preview-modal-close" id="image-preview-modal-close">&times;</button>
+            </div>
+            <div class="image-preview-modal-body">
+                <div class="image-preview-modal-loading" id="image-preview-modal-loading">
+                    <span>加载中...</span>
+                </div>
+                <div class="image-preview-modal-error" id="image-preview-modal-error" style="display: none;">
+                    <div class="image-preview-modal-error-icon">⚠️</div>
+                    <div class="image-preview-modal-error-message" id="image-preview-modal-error-message">加载图片失败</div>
+                    <div class="image-preview-modal-error-hint">请检查图片链接或网络连接</div>
+                </div>
+                <img class="image-preview-modal-img" id="image-preview-modal-img" style="display: none;" alt="预览图片">
+            </div>
+            <div class="image-preview-modal-info" id="image-preview-modal-info">
+                <div>尺寸: <span id="image-preview-modal-dimensions">-</span></div>
+                <div>大小: <span id="image-preview-modal-size">-</span></div>
+                <div>缩放: <span id="image-preview-modal-scale">100%</span></div>
+            </div>
+            <div class="image-preview-modal-controls">
+                <button class="image-preview-modal-btn" id="image-preview-modal-zoom-out" title="缩小">🔍-</button>
+                <button class="image-preview-modal-btn" id="image-preview-modal-reset" title="重置">🔄</button>
+                <button class="image-preview-modal-btn" id="image-preview-modal-zoom-in" title="放大">🔍+</button>
+                <button class="image-preview-modal-btn" id="image-preview-modal-rotate" title="旋转">🔄</button>
+                <button class="image-preview-modal-btn" id="image-preview-modal-prev" title="上一张">⬅</button>
+                <button class="image-preview-modal-btn" id="image-preview-modal-next" title="下一张">➡</button>
+            </div>
+            <button class="image-preview-modal-nav prev" id="image-preview-modal-nav-prev">‹</button>
+            <button class="image-preview-modal-nav next" id="image-preview-modal-nav-next">›</button>
+        </div>
+    </div>
+
+    <!-- 图片预览弹窗样式 -->
+    <style>
+        /* 图片预览弹窗样式 */
+        .image-preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .image-preview-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-preview-modal-content {
+            background: var(--bg-primary, #1e1e1e);
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        .image-preview-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color, #3e3e3e);
+            border-radius: 8px 8px 0 0;
+            background: var(--bg-secondary, #252526);
+        }
+
+        .image-preview-modal-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-primary, #d4d4d4);
+            margin: 0;
+        }
+
+        .image-preview-modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary, #858585);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .image-preview-modal-close:hover {
+            background: var(--hover-bg, #2a2d2e);
+            color: var(--text-primary, #d4d4d4);
+        }
+
+        .image-preview-modal-body {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            min-height: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-preview-modal-img {
+            max-width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+            border-radius: 4px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            cursor: grab;
+            transition: transform 0.1s ease;
+            user-select: none;
+        }
+
+        .image-preview-modal-img:active {
+            cursor: grabbing;
+        }
+
+        .image-preview-modal-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary, #858585);
+            font-size: 14px;
+        }
+
+        .image-preview-modal-loading::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color, #3e3e3e);
+            border-top: 2px solid var(--accent-color, #007fd4);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        .image-preview-modal-error {
+            text-align: center;
+            color: var(--error-color, #f44336);
+            padding: 20px;
+        }
+
+        .image-preview-modal-error-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .image-preview-modal-error-message {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .image-preview-modal-error-hint {
+            font-size: 14px;
+            color: var(--text-secondary, #858585);
+        }
+
+        .image-preview-modal-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px 20px;
+            border-top: 1px solid var(--border-color, #3e3e3e);
+            background: var(--bg-secondary, #252526);
+            font-size: 13px;
+            color: var(--text-secondary, #858585);
+            border-radius: 0 0 8px 8px;
+        }
+
+        .image-preview-modal-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 20px;
+            background: var(--bg-secondary, #252526);
+            border-top: 1px solid var(--border-color, #3e3e3e);
+        }
+
+        .image-preview-modal-btn {
+            background: var(--button-bg, #0e639c);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            min-width: 40px;
+        }
+
+        .image-preview-modal-btn:hover {
+            background: var(--button-hover-bg, #1177bb);
+            transform: translateY(-1px);
+        }
+
+        .image-preview-modal-btn:disabled {
+            background: var(--border-color, #3e3e3e);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .image-preview-modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .image-preview-modal-nav:hover {
+            background: rgba(0, 0, 0, 0.7);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .image-preview-modal-nav.prev {
+            left: 20px;
+        }
+
+        .image-preview-modal-nav.next {
+            right: 20px;
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .image-preview-modal-content {
+                max-width: 95vw;
+                max-height: 95vh;
+            }
+
+            .image-preview-modal-header {
+                padding: 12px 15px;
+            }
+
+            .image-preview-modal-body {
+                padding: 15px;
+            }
+
+            .image-preview-modal-info {
+                flex-direction: column;
+                gap: 5px;
+                text-align: center;
+            }
+
+            .image-preview-modal-controls {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .image-preview-modal-nav {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+
+            .image-preview-modal-nav.prev {
+                left: 10px;
+            }
+
+            .image-preview-modal-nav.next {
+                right: 10px;
+            }
+        }
+
+        /* 浅色主题适配 */
+        @media (prefers-color-scheme: light) {
+            .image-preview-modal-content {
+                background: #ffffff;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            }
+
+            .image-preview-modal-header {
+                background: #f8f8f8;
+                border-bottom-color: #e1e1e1;
+            }
+
+            .image-preview-modal-title {
+                color: #333333;
+            }
+
+            .image-preview-modal-close {
+                color: #666666;
+            }
+
+            .image-preview-modal-close:hover {
+                background: #f0f0f0;
+                color: #333333;
+            }
+
+            .image-preview-modal-loading {
+                color: #666666;
+            }
+
+            .image-preview-modal-error {
+                color: #d32f2f;
+            }
+
+            .image-preview-modal-error-hint {
+                color: #666666;
+            }
+
+            .image-preview-modal-info {
+                background: #f8f8f8;
+                border-top-color: #e1e1e1;
+                color: #666666;
+            }
+
+            .image-preview-modal-controls {
+                background: #f8f8f8;
+                border-top-color: #e1e1e1;
+            }
+
+            .image-preview-modal-btn {
+                background: #1976d2;
+            }
+
+            .image-preview-modal-btn:hover {
+                background: #1565c0;
+            }
+
+            .image-preview-modal-btn:disabled {
+                background: #cccccc;
+            }
+        }
+    </style>
+
+    <!-- 帮助弹窗样式 -->
+    <style>
+        /* 帮助弹窗样式 - 兼容Firefox */
+        #help-content {
+            background: #1e1e1e !important;
+            color: #d4d4d4 !important;
+            border: 1px solid #3e3e3e !important;
+        }
+        
+        /* 浅色主题下的帮助弹窗样式 */
+        @media (prefers-color-scheme: light) {
+            #help-content {
+                background: #ffffff !important;
+                color: #333333 !important;
+                border: 1px solid #e1e1e1 !important;
+            }
+        }
+        
+        /* 确保按钮颜色 */
+        #help-close, #help-readme {
+            background: #0e639c !important;
+            color: white !important;
+        }
+        
+        #help-close:hover, #help-readme:hover {
+            background: #1177bb !important;
+        }
+    </style>
+    
+    <!-- Monaco Editor -->
+    <!-- loader.js is loaded dynamically in app.js -->
+    
+    <!-- 跨浏览器设置样式 -->
+    <link rel="stylesheet" href="styles/cross-browser-settings.css">
+    
+    <!-- 浏览器兼容性修复 -->
+    <script src="js/enhanced-compatibility-fix.js"></script>
+    <script src="js/browser-compatibility-fix.js"></script>
+    
+    <!-- 应用脚本 -->
+    <script src="js/error-handler.js"></script>
+    <script src="js/cross-browser-settings.js"></script>
+    <script src="js/resizer.js"></script>
+    <script src="js/file-system-manager.js"></script>
+    <script src="js/file-manager.js"></script>
+    <script src="js/terminal.js"></script>
+    <script src="js/runner.js"></script>
+    <script src="js/search-manager.js"></script>
+    <script src="js/settings-manager.js"></script>
+    <script src="js/image-preview-manager.js"></script>
+    <script src="js/markdown.js"></script>
+    <script src="js/editor-manager.js"></script>
+    <script src="js/app.js"></script>
+    
+
+    
+    <!-- 帮助弹窗 -->
+    <div id="help-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001;">
+        <div id="help-content" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1e1e1e; color: #5947c1; padding: 30px; border-radius: 8px; max-width: 600px; max-height: 80vh; overflow-y: auto; border: 1px solid #3e3e3e;">
+            <h2 style="margin-top: 0; color: #42417839;">X IDE 使用帮助</h2>
+            
+            <h3 style="color: #d4d4d4; margin-top: 20px;">🎨 编辑器功能</h3>
+            <ul style="color: #d4d4d4;">
+                <li><strong>代码折叠：</strong>点击行号左侧的 ▶/▼ 图标</li>
+                <li><strong>多光标编辑：</strong>Ctrl/Cmd + 点击 添加多个光标</li>
+                <li><strong>代码格式化：</strong>Ctrl/Cmd + Shift + F</li>
+                <li><strong>代码提示：</strong>输入任意字符自动触发</li>
+                <li><strong>HTML补全：</strong>支持标签和属性自动补全</li>
+            </ul>
+            
+            <h3 style="color: #d4d4d4; margin-top: 20px;">📁 文件管理</h3>
+            <ul style="color: #d4d4d4;">
+                <li><strong>拖拽排序：</strong>直接拖拽文件重新排序</li>
+                <li><strong>重命名：</strong>右键点击文件 → 重命名</li>
+                <li><strong>新建文件/文件夹：</strong>右键点击空白处</li>
+                <li><strong>搜索文件：</strong>使用顶部的搜索框</li>
+            </ul>
+            
+            <h3 style="color: #d4d4d4; margin-top: 20px;">⌨️ 常用快捷键</h3>
+            <ul style="color: #d4d4d4;">
+                <li><strong>保存：</strong>Ctrl/Cmd + S</li>
+                <li><strong>格式化：</strong>Ctrl/Cmd + Shift + F</li>
+                <li><strong>查找：</strong>Ctrl/Cmd + F</li>
+                <li><strong>切换主题：</strong>右上角 🌙/☀️ 按钮</li>
+            </ul>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button id="help-close" style="background: #8dd1ff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">关闭</button>
+                <button id="help-readme" style="background: #8dd1ff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-left: 10px;">查看完整文档</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 帮助系统
+        document.addEventListener('DOMContentLoaded', function() {
+            const helpButton = document.getElementById('help-btn');
+            const helpModal = document.getElementById('help-modal');
+            const helpClose = document.getElementById('help-close');
+            const helpReadme = document.getElementById('help-readme');
+            
+            helpButton.addEventListener('click', function() {
+                helpModal.style.display = 'block';
+            });
+            
+            helpClose.addEventListener('click', function() {
+                helpModal.style.display = 'none';
+            });
+            
+            helpReadme.addEventListener('click', function() {
+                // 使用app.js中的新逻辑，这里不再重复定义
+                // 事件监听器已在app.js中定义
+            });
+            
+            helpModal.addEventListener('click', function(e) {
+                if (e.target === helpModal) {
+                    helpModal.style.display = 'none';
+                }
+            });
+            
+            // 添加悬停效果
+            // 标题栏帮助按钮悬停效果
+            helpButton.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#1177bb';
+            });
+            
+            helpButton.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '';
+            });
+        });
+    </script>
+</body>
+</html>
