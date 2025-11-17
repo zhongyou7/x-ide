@@ -8,7 +8,8 @@ const util = require('util');
 
 const execPromise = util.promisify(exec);
 const app = express();
-const PORT = 8000;
+// 优先从环境变量读取端口，没有则使用默认值8000
+const PORT = process.env.PORT || 8000;
 
 // 中间件
 app.use(cors());
