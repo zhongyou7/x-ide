@@ -5,7 +5,7 @@ class FileSystemManager {
         this.fileHandles = new Map();
         this.directoryHandles = new Map();
         this.currentPath = '/';
-        this.useServerAPI = false; // 默认使用浏览器API
+        this.useServerAPI = true; // 默认使用服务器API
         this.serverBasePath = ''; // 服务器基础路径
     }
 

@@ -329,18 +329,8 @@ class CodeRunner {
                 const renderer = new MarkdownRenderer();
                 const html = renderer.render(content);
                 
-                // 创建预览页面
-                const previewHTML = renderer.createPreviewHTML(html, fileName);
-                
-                // 在新窗口中打开预览
-                const newWindow = window.open('', '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
-                if (!newWindow) {
-                    this.app.showError('无法打开新窗口，请检查浏览器设置');
-                    return;
-                }
-                
-                newWindow.document.write(previewHTML);
-                newWindow.document.close();
+                // 使用正确的方法创建并打开预览窗口
+                renderer.createPreviewWindow(html, fileName);
                 
                 this.app.showOutput(`Markdown 文件 "${fileName}" 预览已打开`);
             } else {

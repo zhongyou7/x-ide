@@ -842,7 +842,8 @@ class XIDE {
     }
 
     generateTabId(filePath) {
-        return 'tab_' + btoa(filePath).replace(/[^a-zA-Z0-9]/g, '');
+        // 安全地生成标签ID，避免btoa()的Latin1字符限制问题
+    return 'tab_' + encodeURIComponent(filePath).replace(/[^a-zA-Z0-9]/g, '_');
     }
 
     getFileIcon(fileName) {

@@ -389,25 +389,25 @@ class FileManager {
         // 获取图标类名
         const iconClass = item.type === 'directory' ? 'directory' : this.getFileIconClass(item.name);
         
-        // 创建缩进元素 - VSCode风格的缩进
+        // 创建缩进元素 - 增大缩进宽度
         const indentElement = document.createElement('div');
         indentElement.className = 'tree-indent';
-        indentElement.style.width = `${indentLevel * 16}px`;
+        indentElement.style.width = `${indentLevel * 20}px`; // 从16px增加到20px
         
-        // 创建切换按钮 - VSCode风格的展开/折叠指示器
+        // 创建切换按钮
         const toggleElement = document.createElement('div');
         toggleElement.className = 'tree-toggle';
         
-        // 创建图标元素 - 使用更接近VSCode的图标表示
+        // 创建图标元素
         const iconElement = document.createElement('div');
         iconElement.className = `tree-icon ${iconClass}`;
         
-        // 创建标签元素 - 支持编辑状态
+        // 创建标签元素
         const labelElement = document.createElement('div');
         labelElement.className = 'tree-label';
         labelElement.textContent = item.name;
         
-        // 按照VSCode的顺序添加元素
+        // 添加元素
         treeItem.appendChild(indentElement);
         treeItem.appendChild(toggleElement);
         treeItem.appendChild(iconElement);
@@ -417,16 +417,13 @@ class FileManager {
         if (item.type === 'directory' || isParent) {
             toggleElement.classList.add('collapsed');
             
-            // 切换按钮点击事件 - VSCode风格的点击行为
+            // 切换按钮点击事件
             toggleElement.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.toggleFolder(treeItem);
             });
             
-            // 添加展开/折叠动画
-            const childrenContainer = document.createElement('div');
-            childrenContainer.className = 'tree-children';
-            treeItem.appendChild(childrenContainer);
+            // 注意：childrenContainer现在在toggleFolder方法中创建，与treeItem同级
         } else {
             // 如果是文件，隐藏切换按钮
             toggleElement.style.visibility = 'hidden';
@@ -679,7 +676,7 @@ class FileManager {
         return iconMap[ext] || iconMap[lowerName] || 'default';
     }
 
-    // 切换文件夹展开/折叠 - VSCode风格的展开/折叠逻辑
+    // 切换文件夹展开/折叠 - 简化版本，确保多级目录正常显示
     async toggleFolder(treeItem) {
         const isExpanded = treeItem.classList.contains('expanded');
         const toggle = treeItem.querySelector('.tree-toggle');
@@ -691,56 +688,61 @@ class FileManager {
             return;
         }
         
-        // 添加动画类
-        treeItem.classList.add('animating');
+        // 确保子容器存在
+        let childrenContainer = treeItem.querySelector('.tree-children');
+        if (!childrenContainer) {
+            childrenContainer = document.createElement('div');
+            childrenContainer.className = 'tree-children';
+            // 直接添加到treeItem之后，而不是作为其子元素
+            treeItem.parentNode.insertBefore(childrenContainer, treeItem.nextSibling);
+        }
+        
+        // 确保子容器始终可见
+        childrenContainer.style.display = 'block';
+        childrenContainer.style.visibility = 'visible';
         
         if (isExpanded) {
-            // 折叠文件夹 - VSCode风格的折叠行为
+            // 折叠文件夹
             treeItem.classList.remove('expanded');
-            toggle.classList.remove('expanded');
-            toggle.classList.add('collapsed');
+            if (toggle) {
+                toggle.classList.remove('expanded');
+                toggle.classList.add('collapsed');
+            }
             
             // 更新文件夹图标状态
-            if (icon.classList.contains('directory')) {
+            if (icon && icon.classList.contains('directory')) {
                 icon.classList.remove('expanded');
             }
             
-            // 隐藏子内容 - 使用CSS控制显示/隐藏，保留DOM结构
-            const childrenContainer = treeItem.querySelector('.tree-children');
+            // 清空子容器内容以节省内存
             if (childrenContainer) {
-                // 等待动画完成后完全隐藏
-                setTimeout(() => {
-                    treeItem.classList.remove('animating');
-                }, 150);
+                childrenContainer.innerHTML = '';
+                treeItem.dataset.loaded = 'false'; // 标记为未加载
             }
         } else {
-            // 展开文件夹 - VSCode风格的展开行为
+            // 展开文件夹
             treeItem.classList.add('expanded');
-            toggle.classList.add('expanded');
-            toggle.classList.remove('collapsed');
+            if (toggle) {
+                toggle.classList.add('expanded');
+                toggle.classList.remove('collapsed');
+            }
             
             // 更新文件夹图标状态
-            if (icon.classList.contains('directory')) {
+            if (icon && icon.classList.contains('directory')) {
                 icon.classList.add('expanded');
             }
             
-            // 获取子容器
-            let childrenContainer = treeItem.querySelector('.tree-children');
-            
             // 如果没有加载过子内容，进行加载
-            if (childrenContainer && !treeItem.dataset.loaded) {
+            if (!treeItem.dataset.loaded) {
                 treeItem.dataset.loading = 'true';
                 
                 try {
-                    // 模拟加载延迟，让体验更接近VSCode
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                    
                     // 加载文件夹内容
                     const result = await this.fileSystem.readDirectory(path);
                     
-                    if (result.success && result.data) {
-                        // 过滤并排序子项 - VSCode风格的排序：文件夹在前，然后按名称排序
-                        const children = result.data.filter(item => 
+                    if (result && result.success && result.items) {
+                        // 过滤并排序子项：文件夹在前，然后按名称排序
+                        const children = result.items.filter(item => 
                             item.name !== '.' && item.name !== '..'
                         ).sort((a, b) => {
                             // 文件夹总是排在文件前面
@@ -751,54 +753,66 @@ class FileManager {
                                 return aIsDir ? -1 : 1;
                             }
                             
-                            // 同类型按名称排序（考虑特殊字符和大小写）
+                            // 同类型按名称排序
                             return this.compareFileNames(a.name, b.name);
                         });
                         
                         // 清空容器
                         childrenContainer.innerHTML = '';
                         
-                        // 创建子项
-                        children.forEach(child => {
-                            // 计算下一级的缩进
-                            const level = treeItem.dataset.path === '/' ? 1 : 
-                                treeItem.dataset.path.split('/').filter(Boolean).length + 1;
-                            
-                            const childItem = this.createTreeItem({
-                                ...child,
-                                path: `${path}/${child.name}`
-                            }, level);
-                            childrenContainer.appendChild(childItem);
-                        });
+                        // 如果没有子项，添加提示信息
+                        if (children.length === 0) {
+                            const emptyMessage = document.createElement('div');
+                            emptyMessage.className = 'empty-directory';
+                            emptyMessage.textContent = '空目录';
+                            emptyMessage.style.padding = '4px 20px';
+                            emptyMessage.style.color = '#888';
+                            emptyMessage.style.fontStyle = 'italic';
+                            childrenContainer.appendChild(emptyMessage);
+                        } else {
+                            // 创建子项
+                            children.forEach(child => {
+                                // 简化路径构建，避免重复的斜杠
+                                let childPath = path;
+                                if (childPath.endsWith('/')) {
+                                    childPath += child.name;
+                                } else {
+                                    childPath += '/' + child.name;
+                                }
+                                
+                                // 计算层级（简化版本）
+                                const level = path.split('/').filter(Boolean).length + 1;
+                                
+                                const childItem = this.createTreeItem({
+                                    ...child,
+                                    path: childPath
+                                }, level);
+                                childrenContainer.appendChild(childItem);
+                            });
+                        }
                         
                         treeItem.dataset.loaded = 'true';
                     } else {
-                        // 如果加载失败，显示详细的错误消息
-                        const errorMessage = this.getDetailedErrorMessage(result);
-                        this.showError(`无法打开文件夹: ${errorMessage}`);
+                        // 如果加载失败，显示错误消息
+                        this.showError(`无法打开文件夹: ${path}`);
                         // 回滚状态
                         treeItem.classList.remove('expanded');
-                        toggle.classList.remove('expanded');
-                        toggle.classList.add('collapsed');
+                        if (toggle) {
+                            toggle.classList.remove('expanded');
+                            toggle.classList.add('collapsed');
+                        }
                     }
                 } catch (error) {
                     this.showError(`加载文件夹内容时发生错误: ${error.message}`);
                     // 回滚状态
                     treeItem.classList.remove('expanded');
-                    toggle.classList.remove('expanded');
-                    toggle.classList.add('collapsed');
+                    if (toggle) {
+                        toggle.classList.remove('expanded');
+                        toggle.classList.add('collapsed');
+                    }
                 } finally {
                     treeItem.dataset.loading = 'false';
-                    // 等待动画完成
-                    setTimeout(() => {
-                        treeItem.classList.remove('animating');
-                    }, 150);
                 }
-            } else {
-                // 已加载过内容，直接显示
-                setTimeout(() => {
-                    treeItem.classList.remove('animating');
-                }, 150);
             }
         }
     }

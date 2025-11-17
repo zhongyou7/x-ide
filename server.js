@@ -68,7 +68,22 @@ const fileOperations = {
     // 创建新文件夹
     createFolder: async (folderPath) => {
         try {
-            await fs.mkdir(folderPath, { recursive: true });
+            // 安全检查：防止在系统根目录直接创建文件夹
+            const absolutePath = path.resolve(folderPath);
+            const rootDir = path.parse(absolutePath).root; // 获取根目录路径
+            
+            // 如果尝试在根目录直接创建文件夹，拒绝操作
+            if (absolutePath === rootDir) {
+                return { success: false, error: '不允许在系统根目录直接创建文件夹，请指定子目录' };
+            }
+            
+            // 检查是否尝试在根目录的下一级直接创建文件夹（可选的额外安全检查）
+            const pathParts = absolutePath.substring(rootDir.length).split(path.sep).filter(Boolean);
+            if (pathParts.length === 0) {
+                return { success: false, error: '不允许在系统根目录直接创建文件夹，请指定子目录' };
+            }
+            
+            await fs.mkdir(absolutePath, { recursive: true });
             return { success: true };
         } catch (error) {
             return { success: false, error: error.message };
