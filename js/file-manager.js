@@ -907,7 +907,7 @@ class FileManager {
             border: 1px solid var(--vscode-menu-border);
             border-radius: 4px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
+            z-index: 2000;
             min-width: 160px;
             font-size: 13px;
             color: var(--vscode-menu-foreground);

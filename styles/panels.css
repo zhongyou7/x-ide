@@ -161,6 +161,56 @@
     color: #ffffff;
     border-radius: 3px;
     font-size: 13px;
+    /* 确保下拉框样式一致 */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* 美化下拉框选项 */
+.setting-item select option {
+    background: var(--vscode-editor-background);
+    color: #ffffff;
+    padding: 4px 8px;
+    font-size: 13px;
+}
+
+/* 悬停效果 */
+.setting-item select option:hover {
+    background: var(--vscode-list-hoverBackground);
+    color: #ffffff;
+}
+
+/* 选中效果 */
+.setting-item select option:checked {
+    background: var(--vscode-list-activeSelectionBackground);
+    color: #ffffff;
+}
+
+/* WebKit浏览器特定样式 */
+@supports (-webkit-appearance: none) {
+    .setting-item select {
+        /* 添加自定义箭头 */
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        padding-right: 24px;
+    }
+}
+
+/* Firefox特定样式 */
+@-moz-document url-prefix() {
+    .setting-item select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        padding-right: 24px;
+    }
+    
+    .setting-item select option {
+        background: var(--vscode-editor-background) !important;
+        color: #ffffff !important;
+    }
 }
 
 .setting-item input[type="checkbox"] {

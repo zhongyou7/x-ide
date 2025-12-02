@@ -11,6 +11,55 @@ const app = express();
 // 优先从环境变量读取端口，没有则使用默认值8000
 const PORT = process.env.PORT || 8000;
 
+// 访问次数统计文件路径
+const VISIT_COUNT_FILE = path.join(__dirname, 'data', 'visit-count.json');
+
+// 初始化访问次数文件
+async function initVisitCount() {
+    try {
+        // 创建data目录（如果不存在）
+        await fs.mkdir(path.dirname(VISIT_COUNT_FILE), { recursive: true });
+        
+        // 检查文件是否存在
+        await fs.access(VISIT_COUNT_FILE);
+    } catch (error) {
+        // 如果文件不存在，创建初始文件
+        await fs.writeFile(VISIT_COUNT_FILE, JSON.stringify({ count: 0 }), 'utf8');
+    }
+}
+
+// 获取并增加访问次数
+async function getAndIncrementVisitCount() {
+    try {
+        // 读取当前访问次数
+        const data = await fs.readFile(VISIT_COUNT_FILE, 'utf8');
+        const visitData = JSON.parse(data);
+        
+        // 增加访问次数
+        visitData.count += 1;
+        
+        // 保存更新后的访问次数
+        await fs.writeFile(VISIT_COUNT_FILE, JSON.stringify(visitData), 'utf8');
+        
+        return visitData.count;
+    } catch (error) {
+        console.error('获取访问次数失败:', error);
+        return 1; // 失败时返回默认值
+    }
+}
+
+// 获取当前访问次数（不增加）
+async function getCurrentVisitCount() {
+    try {
+        const data = await fs.readFile(VISIT_COUNT_FILE, 'utf8');
+        const visitData = JSON.parse(data);
+        return visitData.count;
+    } catch (error) {
+        console.error('获取当前访问次数失败:', error);
+        return 0;
+    }
+}
+
 // 中间件
 app.use(cors());
 app.use(express.json());
@@ -54,8 +103,11 @@ const fileOperations = {
             const fullPath = path.resolve(filePath);
             const dir = path.dirname(fullPath);
             
-            // 确保目录存在
-            await fs.mkdir(dir, { recursive: true });
+            // 确保目录存在，但跳过系统根目录（避免权限错误）
+            const rootDir = path.parse(dir).root;
+            if (dir !== rootDir) {
+                await fs.mkdir(dir, { recursive: true });
+            }
             
             // 写入文件
             await fs.writeFile(fullPath, '', 'utf8');
@@ -69,21 +121,7 @@ const fileOperations = {
     // 创建新文件夹
     createFolder: async (folderPath) => {
         try {
-            // 安全检查：防止在系统根目录直接创建文件夹
             const absolutePath = path.resolve(folderPath);
-            const rootDir = path.parse(absolutePath).root; // 获取根目录路径
-            
-            // 如果尝试在根目录直接创建文件夹，拒绝操作
-            if (absolutePath === rootDir) {
-                return { success: false, error: '不允许在系统根目录直接创建文件夹，请指定子目录' };
-            }
-            
-            // 检查是否尝试在根目录的下一级直接创建文件夹（可选的额外安全检查）
-            const pathParts = absolutePath.substring(rootDir.length).split(path.sep).filter(Boolean);
-            if (pathParts.length === 0) {
-                return { success: false, error: '不允许在系统根目录直接创建文件夹，请指定子目录' };
-            }
-            
             await fs.mkdir(absolutePath, { recursive: true });
             return { success: true };
         } catch (error) {
@@ -316,6 +354,27 @@ app.post('/api/command/execute', async (req, res) => {
     }
 });
 
+// 获取访问次数API
+app.get('/api/visit-count', async (req, res) => {
+    try {
+        // 获取并增加访问次数
+        const count = await getAndIncrementVisitCount();
+        res.json({ success: true, count });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// 获取当前访问次数（不增加）
+app.get('/api/visit-count/current', async (req, res) => {
+    try {
+        const count = await getCurrentVisitCount();
+        res.json({ success: true, count });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // 文件监视
 class FileWatcher {
     constructor() {
@@ -376,9 +435,23 @@ app.get('/api/watch', (req, res) => {
 });
 
 // 启动服务器
-app.listen(PORT, () => {
-    console.log(`X IDE 文件服务器运行在端口 ${PORT}`);
-    console.log(`访问 http://localhost:${PORT} 查看应用`);
-});
+async function startServer() {
+    try {
+        // 初始化访问次数文件
+        await initVisitCount();
+        
+        // 启动服务器
+        app.listen(PORT, () => {
+            console.log(`X IDE 文件服务器运行在端口 ${PORT}`);
+            console.log(`访问 http://localhost:${PORT} 查看应用`);
+        });
+    } catch (error) {
+        console.error('服务器启动失败:', error);
+        process.exit(1);
+    }
+}
+
+// 启动服务器
+startServer();
 
 module.exports = { app, fileOperations, fileWatcher };

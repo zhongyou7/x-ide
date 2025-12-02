@@ -783,6 +783,11 @@ class FileSystemManager {
     // 确保目录路径存在，如果不存在则创建
     async ensureDirectoryPath(dirPath) {
         try {
+            // 如果使用服务器API，不需要检查浏览器目录句柄
+            if (this.shouldUseServerAPI()) {
+                return { success: true };
+            }
+            
             // 检查是否已经缓存了该目录
             if (this.directoryHandles.has(dirPath)) {
                 return { success: true };

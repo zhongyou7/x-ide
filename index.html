@@ -720,5 +720,52 @@
             });
         });
     </script>
+    
+    <!-- 控制台彩蛋 -->
+    <script>
+        // 随机一言
+        const quotes = [
+            "✨ 欢迎来到 X-IDE！愿你的代码充满灵感～",
+            "💻 每一行代码都是一个新的开始！",
+            "🚀 让我们一起构建更美好的数字世界！",
+            "🌈 代码有温度，开发者有态度！",
+            "🌟 今天也是充满创造力的一天！",
+            "🎨 编程是一门艺术，IDE是你的画布！",
+            "📚 学习编程，享受成长的乐趣！",
+            "💡 创意无限，代码有形！",
+            "🤖 科技改变世界，代码连接未来！",
+            "🎉 编程让梦想触手可及！"
+        ];
+        
+        // 随机选择一条一言
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        
+        // 从服务器获取全局访问次数
+        async function getGlobalVisitCount() {
+            try {
+                const response = await fetch('/api/visit-count');
+                const data = await response.json();
+                return data.success ? data.count : 0;
+            } catch (error) {
+                console.error('获取访问次数失败:', error);
+                return 0;
+            }
+        }
+        
+        // 显示控制台彩蛋
+        async function showConsoleEasterEgg() {
+            const globalCount = await getGlobalVisitCount();
+            
+            // 控制台输出彩蛋
+            console.log(`%c🎊 X-IDE 控制台彩蛋 🎊`, 'font-size: 18px; font-weight: bold; color: #4CAF50;');
+            console.log(`%c${randomQuote}`, 'font-size: 14px; color: #2196F3;');
+            console.log(`%c👋 你是第 ${globalCount} 位访问 X-IDE 的用户哦！`, 'font-size: 14px; color: #FF9800;');
+            console.log(`%c💝 感谢你查看我的源码，希望你喜欢这个项目！`, 'font-size: 14px; color: #9C27B0;');
+            console.log(`%c🌟 项目地址：https://github.com/zhongyou7/x-ide`, 'font-size: 14px; color: #607D8B;');
+        }
+        
+        // 执行显示彩蛋
+        showConsoleEasterEgg();
+    </script>
 </body>
 </html>

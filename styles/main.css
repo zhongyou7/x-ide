@@ -361,7 +361,7 @@ body {
     border-radius: 6px;
     padding: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+    z-index: 2000;
     min-width: 300px;
 }
 
@@ -526,14 +526,43 @@ body {
     border: 1px solid #e1e1e1; /* 兼容性备用 */
     border-radius: 4px;
     background: var(--input-bg);
-    background: #ffffff; /* 兼容性备用 */
+    background: var(--vscode-input-background, #3c3c3c); /* 暗色主题兼容 */
     color: var(--text-primary);
-    color: #333333; /* 兼容性备用 */
+    color: var(--vscode-input-foreground, #ffffff); /* 暗色主题兼容 */
     font-size: 13px;
     font-family: inherit;
     outline: none;
     min-width: 120px;
     box-sizing: border-box;
+    /* 确保下拉框样式一致 */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* 添加自定义箭头 */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+}
+
+/* 美化下拉框选项 */
+.setting-item select option {
+    background: var(--vscode-editor-background);
+    color: #ffffff;
+    padding: 4px 8px;
+    font-size: 13px;
+}
+
+/* 悬停效果 */
+.setting-item select option:hover {
+    background: var(--vscode-list-hoverBackground);
+    color: #ffffff;
+}
+
+/* 选中效果 */
+.setting-item select option:checked {
+    background: var(--vscode-list-activeSelectionBackground);
+    color: #ffffff;
 }
 
 .setting-item input:focus, .setting-item select:focus {
